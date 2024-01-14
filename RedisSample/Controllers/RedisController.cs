@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using RedisService.Cache;
 
 namespace RedisSample.Controllers
 {
@@ -9,14 +10,30 @@ namespace RedisSample.Controllers
     public class RedisController : ControllerBase
     {
         private readonly ILogger<RedisController> _logger;
-        public RedisController(ILogger<RedisController> logger) { 
+        private readonly ICacheService _cacheService;
+        public RedisController(ILogger<RedisController> logger,ICacheService cacheService) { 
             _logger = logger;
+            _cacheService = cacheService;
         }
 
         [HttpGet(Name = "AddKey")]
-        public bool AddKey()
+        public bool AddKey(string Key,string Data)
         {
-            return true;
+           
+            var expirationTime = DateTimeOffset.Now.AddMinutes(5.0);
+            return _cacheService.SetData<string>(Key,Data, expirationTime);
+        }
+
+        [HttpGet(Name = "AddKey")]
+        public string GetKey(string Key)
+        {
+            return _cacheService.GetData<string>(Key);
+        }
+
+        [HttpGet(Name = "AddKey")]
+        public bool RemoveKey(string Key)
+        {
+            return _cacheService.RemoveData(Key);
         }
     }
 }
